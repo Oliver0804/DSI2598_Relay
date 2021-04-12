@@ -23,6 +23,11 @@ String data_tempt = "";            //  各種字串參數暫存器
 String server_IP = "oliver0804.ddns.net";    // 上傳Web網址
 int server_port = 1883;            //  不修改 (for MQTT)
 String noreply = "no reply, reset all";
+int runMode = 0;
+
+int relayMqttTime = 30;
+int relayOneTime = 30;
+int relayTwoTime = 30;
 
 String message(String data, String value_No) {
   data_tempt = "\"{\"";
@@ -96,34 +101,62 @@ void serial_read() {
 
       if (data[0] == '+' && data[4] == 'R') {
         Serial.print(">>>>"); Serial.println(data[27]);
-        settingRelay += data[27];
-        settingValue += data[31];
-        settingValue += data[32];
-        settingValue += data[33];
-        settingValue += data[34];
-        Serial.print(">>>>"); Serial.println(settingValue.toInt());
-        switch (settingRelay.toInt()) {
-          case 1:
-            Serial.print(">>>>"); Serial.println("Open Realy 1");
-            digitalWrite(PB13, LOW);
-            delay(settingValue.toInt());
-            Serial.print(">>>>"); Serial.println("Close Realy 1");
-            digitalWrite(PB13, HIGH);
-            break;
-          case 2:
-            Serial.print(">>>>"); Serial.println("Open Realy 2");
-            digitalWrite(PB14, LOW);
-            delay(settingValue.toInt());
-            Serial.print(">>>>"); Serial.println("Close Realy 2");
-            digitalWrite(PB14, HIGH);
-            break;
-          case 3:
-            Serial.print(">>>>"); Serial.println("Open Realy 3");
-            digitalWrite(PB15, LOW);
-            delay(settingValue.toInt());
-            Serial.print(">>>>"); Serial.println("Close Realy 3");
-            digitalWrite(PB15, HIGH);
-            break;
+        settingRelay += data[27];//編號
+        if (data[27] == '1' || data[27] == '2' || data[27] == '3') {
+          settingValue += data[31];
+          settingValue += data[32];
+          settingValue += data[33];
+          settingValue += data[34];
+          Serial.print(">>>>"); Serial.println(settingValue.toInt());
+          switch (settingRelay.toInt()) {
+            case 1:
+              Serial.print(">>>>"); Serial.println("Open Realy 1");
+              digitalWrite(PB13, LOW);
+              delay(settingValue.toInt());
+              Serial.print(">>>>"); Serial.println("Close Realy 1");
+              digitalWrite(PB13, HIGH);
+              break;
+            case 2:
+              Serial.print(">>>>"); Serial.println("Open Realy 2");
+              digitalWrite(PB14, LOW);
+              delay(settingValue.toInt());
+              Serial.print(">>>>"); Serial.println("Close Realy 2");
+              digitalWrite(PB14, HIGH);
+              break;
+            case 3:
+              Serial.print(">>>>"); Serial.println("Open Realy 3");
+              digitalWrite(PB15, LOW);
+              delay(settingValue.toInt());
+              Serial.print(">>>>"); Serial.println("Close Realy 3");
+              digitalWrite(PB15, HIGH);
+              break;
+          }
+        } else if (data[27] == 'r' && data[28] == 'u' && data[29] == 'n') {
+          
+
+          runMode = 1;
+          settingValue = "";
+          settingValue += data[33];
+          settingValue += data[34];
+          settingValue += data[35];
+          settingValue += data[36];
+          relayMqttTime = settingValue.toInt();
+          relayOneTime = relayMqttTime;
+          settingValue = "";
+          settingValue += data[33 + 4];
+          settingValue += data[34 + 4];
+          settingValue += data[35 + 4];
+          settingValue += data[36 + 4];
+          relayMqttTime = settingValue.toInt();
+          relayTwoTime = relayMqttTime;
+
+          Serial.print(">>>>");
+          Serial.print("run:RELAYTIME");
+          Serial.print("@");
+          Serial.print(relayOneTime);
+          Serial.print("@");
+
+          Serial.print(relayTwoTime);
         }
       }
 

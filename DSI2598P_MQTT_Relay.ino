@@ -16,6 +16,7 @@
 int relay[4] = {0};
 int relaytime[4] = {0};
 int keeptime = 0;
+
 void setup() {
   pinMode(PB12, OUTPUT);
   pinMode(PB13, OUTPUT);
@@ -35,15 +36,15 @@ void setup() {
   Serial.println("connect MQTT.");
   connect_MQTT("DSI2598");
   delay(30 * 1000);
-    digitalWrite(PB12, LOW);
-  Serial1.print("AT+QMTSUB=0,1,\"nbiot/relay/1\",0,\"nbiot/relay/2\",0,\"nbiot/relay/3\",0\n\r");
+  digitalWrite(PB12, LOW);
+  Serial1.print("AT+QMTSUB=0,1,\"nbiot/relay/1\",0,\"nbiot/relay/2\",0,\"nbiot/relay/3\",0,\"nbiot/relay/run\",0\n\r");
 }
 
 void loop() {
-  if (keeptime >=10000) {
-    
+  if (keeptime >= 10000) {
+
     Serial.println("keep alive");
-    Serial1.print("AT+QMTSUB=0,1,\"nbiot/relay/1\",0,\"nbiot/relay/2\",0,\"nbiot/relay/3\",0\n\r");
+    Serial1.print("AT+QMTSUB=0,1,\"nbiot/relay/1\",0,\"nbiot/relay/2\",0,\"nbiot/relay/3\",0,\"nbiot/relay/run\",0\n\r");
     keeptime = 0;
   } else {
     keeptime++;
@@ -54,4 +55,35 @@ void loop() {
   if (Serial.available()) Serial1.write(Serial.read());
   // Serial.println(sta);
   serial_read();
+  if (runMode == 1) {
+
+    if (relayOneTime <= 0) {
+      digitalWrite(PB14, HIGH);
+    } else {
+      digitalWrite(PB14, LOW);
+      relayOneTime--;
+    }
+    if (relayTwoTime <= 0) {
+      digitalWrite(PB15, HIGH);
+    } else {
+      digitalWrite(PB15, LOW);
+      relayTwoTime--;
+    }
+    if (relayOneTime <= 0 && relayTwoTime <= 0) {
+      runMode = 0;
+            digitalWrite(PB14, HIGH);
+            digitalWrite(PB15, HIGH);
+              digitalWrite(PB12, LOW);
+    } else {
+       Serial.print(relayOneTime);
+       Serial.print(":");
+      Serial.println(relayTwoTime);
+      digitalWrite(PB12, !digitalRead(PB12));
+      
+      delay(1000);
+    }
+  }
+
+
+
 }
